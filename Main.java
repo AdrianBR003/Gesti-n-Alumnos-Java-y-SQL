@@ -1,8 +1,7 @@
 package def;
 import java.sql.*;
-import java.util.HashSet;
-import java.util.Scanner;
-import java.util.Set; //Nos permite tener un mayor control de los datos, para que estos no salgan duplicados
+import java.sql.Date;
+import java.util.*;
 
 public class Main {
 
@@ -51,16 +50,16 @@ public class Main {
         System.out.println("Seleccione la opción que desea ejecutar:\n");
         System.out.println("[1] Listar las tablas de la base de datos \n");
         System.out.println("[2] Filtrar por.. \n");
-        System.out.println("[3] Listar a todos los alumnos \n");
-        System.out.println("[4] Anadir a un alumno \n");
-        System.out.println("[5] Eliminar a un alumno \n");
+        System.out.println("[3] Listar.. \n");
+        System.out.println("[4] Anadir.. \n");
+        System.out.println("[5] Eliminar.. \n");
         System.out.println("[6] Anadir proyecto a un alumno \n");
         System.out.println("[7] Eliminar proyecto a un alumno \n");
         System.out.println("[8] Listar a todos los alumnos con sus respectivos proyectos \n");
         swP(scI.nextInt());
     }
 
-    public static void swP(int opcionP) throws SQLException {
+    public static Runnable swP(int opcionP) throws SQLException {
         switch (opcionP) {
             case 1://Listar las tablas de la base de datos
                 ListATab(conn());
@@ -74,9 +73,22 @@ public class Main {
                 ListA(conn());
                 salir();
                 break;
-            case 4://Anadir alumno
-                anAln();
-                salir();
+            case 4://Anadir..
+                //Variables:
+                int opcion;
+                //
+                opcion = menuFAPA(false);
+                if (opcion == 1) { // Devuelve 1 para Alum || 2 Prof || -1 ERR
+                    Anadir(1);
+                    salir();
+                } else if (opcion == 2) {
+                    Anadir(2);
+                    salir();
+                } else {
+                    System.out.println("\nER opcion no valida - sWP\n");
+                    menuFAPA(false); //va a volver a llamar al metodo
+                    swP(4);
+                }
                 break;
             case 5:
                 break;
@@ -87,6 +99,7 @@ public class Main {
             case 8:
                 break;
         }
+        return null;
     }
 
     public static void menuF() {
@@ -117,11 +130,11 @@ public class Main {
                 break;
             case 2://Asignaturas
                 System.out.println("Filtra las asignaturas por: \n");
-                menuFAPA();
+                menuFAPA(true); //Activada la opcion de ambos
                 break;
             case 3://Fecha Nacimiento
                 System.out.println("Filtra la fecha de nacimiento por: \n");
-                menuFAPA();
+                menuFAPA(true);
                 break;
             case 4://Antiguedad
                 break;
@@ -130,11 +143,13 @@ public class Main {
         }
     }
 
-    public static int menuFAPA() { //Alumnos-Profesor-Ambos
+    public static int menuFAPA(boolean apa) { //Alumnos-Profesor-Ambos
         System.out.println("[1] Alumno\n");
         System.out.println("[2] Profesor\n");
-        System.out.println("[3] Ambos\n");
-        return scI.nextInt(); //Devuelve el dato leido
+        if (apa) {
+            System.out.println("[3] Ambos\n");
+        }
+        return scI.nextInt();
     }
 
     //}
@@ -166,6 +181,7 @@ public class Main {
             e.printStackTrace();
         }
     }
+
     //Listar las tablas de la base de datos ([1] MenuP)
     public static void ListATab(Connection conn) {
         try {
@@ -200,8 +216,9 @@ public class Main {
             e.printStackTrace();
         }
     }
+
     //Listar tabla Alumnos con sus atributos:
-    public static void ListA(Connection conn){
+    public static void ListA(Connection conn) {
         try {
             Statement statement = conn.createStatement();
             ResultSet resultSetTables = statement.executeQuery("SHOW TABLES");
@@ -300,12 +317,13 @@ public class Main {
             String query = "INSERT INTO profesor (DNI, fechaNacimiento, antiguedad) VALUES (?, ?, ?)";
             try (PreparedStatement pstmt = conn.prepareStatement(query)) {
                 pstmt.setString(1, profesor.getDNI());
-                pstmt.setDate(2, new java.sql.Date(profesor.getFechaNacimiento().getTime()));
+                pstmt.setDate(2, new Date(profesor.getFechaNacimiento().getTime()));
                 pstmt.setInt(3, profesor.getAntiguedad());
                 pstmt.executeUpdate();
             }
         }
     }
+
     public static void iniAlum() throws SQLException { //ALUMNO
         try {
             // Crear alumno 1
@@ -329,36 +347,39 @@ public class Main {
             e.printStackTrace();
         }
     }
+
     public static void insertarAlumno(Connection conn, Alumno alumno) throws SQLException {
-        if(!existeA(conn(),alumno.getDNI())) {
+        if (!existeA(conn(), alumno.getDNI())) {
             String query = "INSERT INTO alumno (DNI, fechaNacimiento, Curso) VALUES (?, ?, ?)";
             try (PreparedStatement pstmt = conn.prepareStatement(query)) {
                 pstmt.setString(1, alumno.getDNI());
-                pstmt.setDate(2, new java.sql.Date(alumno.getFechaNacimiento().getTime()));
+                pstmt.setDate(2, new Date(alumno.getFechaNacimiento().getTime()));
                 pstmt.setInt(3, alumno.getCurso());
                 pstmt.executeUpdate();
             }
         }
     }
+
     public static void iniProyec() throws SQLException { //ALUMNO
         try {
             //Proyecto1
             Proyectos proyecto1 = new Proyectos("12345678A", new Date(90, 0, 15), 2, "Título del Proyecto 1");
-            insertarProyecto(conn(),proyecto1);
+            insertarProyecto(conn(), proyecto1);
             //Proyecto2
             Proyectos proyecto2 = new Proyectos("23456789B", new Date(88, 5, 20), 1, "Título del Proyecto 2");
-            insertarProyecto(conn(),proyecto2);
+            insertarProyecto(conn(), proyecto2);
             //Proyecto3
             Proyectos proyecto3 = new Proyectos("34567890C", new Date(89, 9, 10), 3, "Título del Proyecto 3");
-            insertarProyecto(conn(),proyecto3);
+            insertarProyecto(conn(), proyecto3);
 
         } catch (SQLException e) {
             System.out.println("Error al inicializar los proyectos.");
             e.printStackTrace();
         }
     }
+
     public static void insertarProyecto(Connection conn, Proyectos proyecto) throws SQLException {
-        if(!existePry(conn(),proyecto.getDNI())) {
+        if (!existePry(conn(), proyecto.getDNI())) {
             String query = "INSERT INTO proyectos (DNIAlumn, Titulo) VALUES (?, ?)";
             try (PreparedStatement pstmt = conn.prepareStatement(query)) {
                 pstmt.setString(1, proyecto.getDNI());
@@ -370,8 +391,9 @@ public class Main {
 
     //METODOS PARA ANADIR Y ELIMINAR
     //{
-    public static void anAln() throws SQLException {
-        System.out.println("Escriba el DNI del alumno");
+    public static Runnable Anadir(int op) throws SQLException { //Alumnos==1 || Profesor==2 || Proyecto==3
+        //
+        System.out.println("Escriba el DNI");
         String dni_a = scS.nextLine();
         System.out.println("Escriba el ano de nacimiento del alumno");
         int ano_a = scI.nextInt();
@@ -379,14 +401,28 @@ public class Main {
         int mes_a = scI.nextInt();
         System.out.println("Escriba el dia de nacimiento del alumno");
         int dia_a = scI.nextInt();
-        System.out.println("Indique el curso de alumno (Solo '1' y '2')");
-        int curso_a = scI.nextInt();
-        System.out.println("Escriba el nombre del proyecto del alumno");
-        String proy_a = scS.nextLine();
-        Date datex = new Date(ano_a,mes_a,dia_a);
-        Alumno alumnox = new Alumno(dni_a,datex,curso_a);
-        insertarAlumno(conn(),alumnox);
+        Date datex = new Date(ano_a, mes_a, dia_a);
+        if (op == 1) { //Alumno
+            System.out.println("Indique el curso de alumno (Solo '1' y '2')");
+            int curso_a = scI.nextInt();
+            System.out.println("Escriba el nombre del proyecto del alumno");
+            String proy_a = scS.nextLine();
+            Alumno alumnox = new Alumno(dni_a, datex, curso_a);
+            insertarAlumno(conn(), alumnox);
+        } else if (op == 2) {
+            System.out.println("Seleccione la asignatura del profesor\n");
+            System.out.println("[1] Matematicas\n");
+            System.out.println("[2] Historia\n");
+            System.out.println("[3] Biologia\n");
+            System.out.println("[4] Fisica\n");
+            System.out.println("[5] Quimica\n");
+            System.out.println("[6] Literatura\n");
+            int asign = scI.nextInt();
+
+        }
+        return null;
     }
+
 
     //}
     //} INICIALIZAR E INSERTAR
@@ -410,6 +446,7 @@ public class Main {
         }
         return false; // Si hay algún error o no se encuentra el registro, devuelve false
     }
+
     //PROFESOR || Metodos para comprobar si hay datos ya insertados en las tablas (para que no de error por doble insercion)
     public static boolean existeP(Connection conn, String dni) {
         String query = "SELECT COUNT(*) FROM profesor WHERE DNI = ?";
@@ -442,8 +479,12 @@ public class Main {
         }
         return false; // Si hay algún error o no se encuentra el registro, devuelve false
     }
-
     //}METODO INSERCION
+
+    //METODOS EXCEPCIONES:
+    //{
+
+    //}
 
     //OTROS METODOS:
 
@@ -457,7 +498,6 @@ public class Main {
         }
         return false;
     }
-
 // --------------- FIN METODOS ---------------
 
 }
