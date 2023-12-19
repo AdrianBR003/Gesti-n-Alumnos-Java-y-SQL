@@ -16,10 +16,11 @@ public class Main {
         // --------------- CONEXION CON LA BASE DE DATOS ---------------
         // Cargar el driver de MySQL (asegúrate de tener el conector MySQL JDBC en tu proyecto)
         //Conexion con la BD
-        System.out.println("Conectado a la base de datos");
+
         // --------------- INICIO MODIFICACION EN LA BASE DE DATOS ---------------
 //          selectDispositivos(conn); //Prueba con tabla practica 3
         conn();
+        System.out.println("Conectado a la base de datos");
         //Inicializamos e insertamos los objetos profesor
         iniProf();
         iniAlum();
