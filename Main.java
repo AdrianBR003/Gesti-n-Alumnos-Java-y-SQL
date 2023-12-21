@@ -59,7 +59,7 @@ public class Main {
         swP(scI.nextInt());
     }
 
-    public static Runnable swP(int opcionP) throws SQLException {
+    public static void swP(int opcionP) throws SQLException {
         switch (opcionP) {
             case 1://Listar las tablas de la base de datos
                 ListATab(conn());
@@ -74,17 +74,14 @@ public class Main {
                 salir();
                 break;
             case 4://Anadir..
-                //Variables:
-                int opcion;
-                //
-                opcion = menuFAPA(false);
+                int opcion = menuFAPA(false);
                 if (opcion == 1) { // Devuelve 1 para Alum || 2 Prof || -1 ERR
                     Anadir(1);
                     salir();
                 } else if (opcion == 2) {
                     Anadir(2);
                     salir();
-                } else {
+                } else {//opcion=-1
                     System.out.println("\nER opcion no valida - sWP\n");
                     menuFAPA(false); //va a volver a llamar al metodo
                     swP(4);
@@ -99,7 +96,6 @@ public class Main {
             case 8:
                 break;
         }
-        return null;
     }
 
     public static void menuF() {
@@ -143,14 +139,26 @@ public class Main {
         }
     }
 
-    public static int menuFAPA(boolean apa) { //Alumnos-Profesor-Ambos
+    public static int menuFAPA(boolean apa) {
         System.out.println("[1] Alumno\n");
         System.out.println("[2] Profesor\n");
         if (apa) {
             System.out.println("[3] Ambos\n");
         }
-        return scI.nextInt();
+        int compr = scI.nextInt(); // Variable para comprobar errores en el método
+
+        if (apa) {
+            if (compr != 1 && compr != 2 && compr != 3) {
+                compr = -1; // Marcar error si la opción no es válida
+            }
+        } else {
+            if (compr != 1 && compr != 2) {
+                compr = -1; // Marcar error si la opción no es válida
+            }
+        }
+        return compr;
     }
+
 
     //}
     //METODOS PARA FILTRAR - LISTAR
@@ -276,40 +284,24 @@ public class Main {
     //{
     public static void iniProf() throws SQLException { //PROFESOR
         //Creacion del profesor 1
-        Profesor profesor1 = new Profesor("12345678A", new Date(80, 0, 15), 5);
+        Profesor profesor1 = new Profesor("12345678A", new Date(80, 0, 15), 5,"Matematicas");
         Set<String> asignaturasProfesor1 = new HashSet<>(); //Creamos el Hashset para el profesor1 usando Set para declarar que no se repita ningun String
-        asignaturasProfesor1.add("Matemáticas");
         asignaturasProfesor1.add("Física");
-        profesor1.setAsignaturas(asignaturasProfesor1);
         insertProf(conn(), profesor1); //Esto obliga a poner el SQLException
         // Creación de profesor 2
-        Profesor profesor2 = new Profesor("98765432B", new Date(75, 2, 28), 8);
-        Set<String> asignaturasProfesor2 = new HashSet<>();
-        asignaturasProfesor2.add("Historia");
-        asignaturasProfesor2.add("Literatura");
-        profesor2.setAsignaturas(asignaturasProfesor2);
+        Profesor profesor2 = new Profesor("98765432B", new Date(75, 2, 28), 8,"Fisica");
         insertProf(conn(), profesor2);
         // Creación de profesor 3
-        Profesor profesor3 = new Profesor("56789012C", new Date(85, 5, 10), 3);
-        Set<String> asignaturasProfesor3 = new HashSet<>();
-        asignaturasProfesor3.add("Biología");
-        asignaturasProfesor3.add("Química");
-        profesor3.setAsignaturas(asignaturasProfesor3);
+        Profesor profesor3 = new Profesor("56789012C", new Date(85, 5, 10), 3,"Historia");
         insertProf(conn(), profesor3);
         // Creación de profesor 4
-        Profesor profesor4 = new Profesor("34567890D", new Date(90, 10, 20), 7);
-        Set<String> asignaturasProfesor4 = new HashSet<>();
-        asignaturasProfesor4.add("Informática");
-        asignaturasProfesor4.add("Programación");
-        profesor4.setAsignaturas(asignaturasProfesor4);
+        Profesor profesor4 = new Profesor("34567890D", new Date(90, 10, 20), 7,"Quimica");
         insertProf(conn(), profesor4);
         // Creación de profesor 5
-        Profesor profesor5 = new Profesor("90123456E", new Date(79, 7, 5), 4);
-        Set<String> asignaturasProfesor5 = new HashSet<>();
-        asignaturasProfesor5.add("Arte");
-        asignaturasProfesor5.add("Música");
-        profesor5.setAsignaturas(asignaturasProfesor5);
+        Profesor profesor5 = new Profesor("90123456E", new Date(79, 7, 5), 4,"Biologia");
         insertProf(conn(), profesor5);
+        Profesor profesor6 = new Profesor("90121111F", new Date(20, 7, 5), 4,"Literatura");
+        insertProf(conn(), profesor6);
     }
 
     public static void insertProf(Connection conn, Profesor profesor) throws SQLException {
@@ -356,6 +348,8 @@ public class Main {
                 pstmt.setDate(2, new Date(alumno.getFechaNacimiento().getTime()));
                 pstmt.setInt(3, alumno.getCurso());
                 pstmt.executeUpdate();
+            }catch (Exception e){
+                System.out.println("\nER-No se ha podido insertar al alumno - insertarAlumno\n");
             }
         }
     }
@@ -391,36 +385,30 @@ public class Main {
 
     //METODOS PARA ANADIR Y ELIMINAR
     //{
-    public static Runnable Anadir(int op) throws SQLException { //Alumnos==1 || Profesor==2 || Proyecto==3
+    public static void Anadir(int op) throws SQLException { //Alumnos==1 || Profesor==2 || Proyecto==3
         //
-        System.out.println("Escriba el DNI");
-        String dni_a = scS.nextLine();
-        System.out.println("Escriba el ano de nacimiento del alumno");
-        int ano_a = scI.nextInt();
-        System.out.println("Escriba el mes de nacimiento del alumno");
-        int mes_a = scI.nextInt();
-        System.out.println("Escriba el dia de nacimiento del alumno");
-        int dia_a = scI.nextInt();
-        Date datex = new Date(ano_a, mes_a, dia_a);
+        System.out.println("Escriba el DNI \n");
+        String dni = scS.nextLine();
+        System.out.println("Escriba el ano de nacimiento\n");
+        int ano = scI.nextInt();
+        System.out.println("Escriba el mes de nacimiento\n");
+        int mes = scI.nextInt();
+        System.out.println("Escriba el dia de nacimiento\n");
+        int dia = scI.nextInt();
+        Date datex = new Date(ano, mes, dia);
         if (op == 1) { //Alumno
             System.out.println("Indique el curso de alumno (Solo '1' y '2')");
             int curso_a = scI.nextInt();
             System.out.println("Escriba el nombre del proyecto del alumno");
             String proy_a = scS.nextLine();
-            Alumno alumnox = new Alumno(dni_a, datex, curso_a);
+            Alumno alumnox = new Alumno(dni, datex, curso_a);
             insertarAlumno(conn(), alumnox);
-        } else if (op == 2) {
-            System.out.println("Seleccione la asignatura del profesor\n");
-            System.out.println("[1] Matematicas\n");
-            System.out.println("[2] Historia\n");
-            System.out.println("[3] Biologia\n");
-            System.out.println("[4] Fisica\n");
-            System.out.println("[5] Quimica\n");
-            System.out.println("[6] Literatura\n");
-            int asign = scI.nextInt();
-
+        } else if (op == 2) { //Profesor
+            System.out.println("Escriba l antiguedad del profesor \n");
+            int antig = scI.nextInt();
+            Profesor profesorx = new Profesor(dni,datex,antig,asignaturas());
+            insertProf(conn(),profesorx);
         }
-        return null;
     }
 
 
@@ -481,6 +469,26 @@ public class Main {
     }
     //}METODO INSERCION
 
+    //METODOS UNICOS DE CLASES:
+    //{
+
+    public static String asignaturas(){
+        System.out.println("Escriba el nombre de la asignatura del profesor\n");
+        System.out.println("[1] Matematicas\n");
+        System.out.println("[2] Historia\n");
+        System.out.println("[3] Biologia\n");
+        System.out.println("[4] Fisica\n");
+        System.out.println("[5] Quimica\n");
+        System.out.println("[6] Literatura\n");
+        String asign = scS.nextLine();
+        if(!asign.equalsIgnoreCase("Matematicas")&&!asign.equalsIgnoreCase("Historia")&&!asign.equalsIgnoreCase("Biologia")&&!asign.equalsIgnoreCase("Fisica")&&!asign.equalsIgnoreCase("Quimica")&&!asign.equalsIgnoreCase("Literatura")) {
+            return ("N");
+        }
+        return asign;
+    }
+
+    //}
+
     //METODOS EXCEPCIONES:
     //{
 
@@ -491,12 +499,12 @@ public class Main {
     //Metodo para seguir en la maquina de estados:
     public static boolean salir() throws SQLException {
         System.out.println("\n ¿Desea volver al menu principal [S/N] ? \n");
-        String condicion = scB.nextLine();
-        if(condicion.equalsIgnoreCase("S")){
-            menuP();
-            return true;
+        String condicion="";
+        while(!condicion.equalsIgnoreCase("S")&&!condicion.equalsIgnoreCase("N")) {
+            condicion=scS.nextLine();
         }
-        return false;
+        menuP();
+        return true;
     }
 // --------------- FIN METODOS ---------------
 

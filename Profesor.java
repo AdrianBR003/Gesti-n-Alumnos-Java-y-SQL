@@ -5,16 +5,16 @@ public class Profesor {
 
     //#---VARIABLES---#
     private String DNI;
-    private Set<String> asignaturas;  //Estructura de datos perfecta para almacenar datos elementos unicos sin un orden
+    private String asignatura;  //1 asign por profesor -> Relacion 1:N (darClase)
     private Date fechaNacimiento;
     private int antiguedad;
 
     //#---CONSTRUCTOR definido---#
-    public Profesor(String DNI, Date fechaNacimiento, int antiguedad) {
+    public Profesor(String DNI, Date fechaNacimiento, int antiguedad, String asignatura) {
         this.DNI = DNI;
         this.fechaNacimiento = fechaNacimiento;
         this.antiguedad = antiguedad;
-        this.asignaturas = new HashSet<>();
+        this.asignatura = asignatura;
     }
     //#---GETTER AND SETTER---#
     //Dni
@@ -25,11 +25,11 @@ public class Profesor {
         this.DNI = DNI;
     }
     //Asignaturas
-        public Set<String> getAsignaturas() {
-            return asignaturas;
+        public String getAsignaturas() {
+            return asignatura;
         }
-        public void setAsignaturas(Set<String> asignaturas) {
-            this.asignaturas = asignaturas;
+        public void setAsignaturas(String asignatura) {
+            this.asignatura = asignatura;
     }
     //FechaNacimiento
     public Date getFechaNacimiento() {

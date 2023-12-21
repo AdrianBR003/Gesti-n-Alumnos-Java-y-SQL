@@ -7,6 +7,7 @@ public class Alumno {
     private Map<Integer, List<String>> asignaturasPorCurso = new HashMap<>();
     private Date fechaNacimiento;
     private int curso;
+    //El alumno no tiene declarado el proyecto, ya que puede tenerlo o no tenerlo. Directamente se declara con la clase proyecto que hereda de la Alumno
 
     //#---CONSTRUCTOR definido---#
     public Alumno(String DNI, Date fechaNacimiento, int curso) {
