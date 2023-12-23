@@ -10,6 +10,11 @@ public class Main {
     static Scanner scI = new Scanner(System.in); //Scanner para Enteros (Integer)
     static Scanner scS = new Scanner(System.in); //Scanner para String
     static Scanner scB = new Scanner(System.in); //Scanner para Boolean
+    //Variables Genericas:
+    static int result;
+    static List<Integer> AHist = new ArrayList<>();
+
+
 
     public static void main(String[] args) throws SQLException { //Hay que añadir el SQLExepction al utilizar el metodo conn()
         // --------------- CONEXION CON LA BASE DE DATOS ---------------
@@ -56,38 +61,52 @@ public class Main {
         System.out.println("[6] Anadir proyecto a un alumno \n");
         System.out.println("[7] Eliminar proyecto a un alumno \n");
         System.out.println("[8] Listar a todos los alumnos con sus respectivos proyectos \n");
-        swP(scI.nextInt());
+        System.out.println("[0] Salir \n");
+        boolean cond=false;
+        while(!cond) {
+            result = verfI();
+            if(result!=-1){
+                if(0<=result & result<=8){
+                    cond=true;
+                    AHist.add(result);
+                    swP(result,AHist);
+                }else{
+                    System.out.println("\nEl valor no está disposible\n");
+                }
+            }
+        }
     }
 
-    public static void swP(int opcionP) throws SQLException {
+    public static void swP(int opcionP, List<Integer> AHist) throws SQLException {
         switch (opcionP) {
             case 1://Listar las tablas de la base de datos
-                ListATab(conn());
-                salir();
+                ListTab(conn(),AHist);
+                menuP();
                 break;
             case 2://Filtrar
-                menuF();
-                salir();
+                //No disponible por ahora
+                menuF(AHist);
+                menuP();
                 break;
-            case 3://Listar solo a los alumnos
-                ListA(conn());
-                salir();
+            case 3://Listar a profesores, alumnos o ambos
+                Listar(conn(),menuFAPA(true,AHist));
+                menuP();
                 break;
             case 4://Anadir..
-                int opcion = menuFAPA(false);
+                int opcion = menuFAPA(false,AHist);
                 if (opcion == 1) { // Devuelve 1 para Alum || 2 Prof || -1 ERR
                     Anadir(1);
-                    salir();
+                    menuP();
                 } else if (opcion == 2) {
                     Anadir(2);
-                    salir();
+                    menuP();
                 } else {//opcion=-1
                     System.out.println("\nER opcion no valida - sWP\n");
-                    menuFAPA(false); //va a volver a llamar al metodo
-                    swP(4);
+                    menuFAPA(false,AHist); //va a volver a llamar al metodo
+                    swP(4,AHist);
                 }
                 break;
-            case 5:
+            case 5://Eliminar..
                 break;
             case 6:
                 break;
@@ -95,17 +114,30 @@ public class Main {
                 break;
             case 8:
                 break;
+            default:
+                salir(AHist);
         }
     }
 
-    public static void menuF() {
+    public static void menuF(List<Integer> AHist) {
         System.out.println("Filtrar por: \n");
         System.out.println("[1] Curso: Se mostraran a los alumnos del curso que inserte \n");
         System.out.println("[2] Asignaturas: ...\n");
         System.out.println("[3] Fecha de Nacimiento: ...\n");
         System.out.println("[4] Antiguedad: Filtra a los profesores por la antiguedad que inserte\n");
         System.out.println("[5] OPCIONAL:\n");
-        swF(scI.nextInt());
+        boolean cond=false;
+        while(!cond) {
+            result = verfI();
+            if(result!=-1){
+                if(1<=result & result<=5){
+                    cond=true;
+                    swF(result,AHist);
+                }else{
+                    System.out.println("\nEl valor no está disposible\n");
+                }
+            }
+        }
     }
 
     /*Nota sobre filtrar:
@@ -120,17 +152,17 @@ public class Main {
        4) Antiguedad: Filtra a los profesores por antiguedad (V.Unica P)
        5) OPCIONAL si da tiempo: Añadir atributo 'date' a proyectos y filtrarlos por fecha.
    */
-    public static void swF(int opcionF) {
+    public static void swF(int opcionF, List<Integer> AHist) {
         switch (opcionF) { //Filtra por:
             case 1://Curso
                 break;
             case 2://Asignaturas
                 System.out.println("Filtra las asignaturas por: \n");
-                menuFAPA(true); //Activada la opcion de ambos
+                menuFAPA(true,AHist); //Activada la opcion de ambos
                 break;
             case 3://Fecha Nacimiento
                 System.out.println("Filtra la fecha de nacimiento por: \n");
-                menuFAPA(true);
+                menuFAPA(true,AHist);
                 break;
             case 4://Antiguedad
                 break;
@@ -139,24 +171,34 @@ public class Main {
         }
     }
 
-    public static int menuFAPA(boolean apa) {
+    public static int menuFAPA(boolean apa, List<Integer> AHist) {
         System.out.println("[1] Alumno\n");
         System.out.println("[2] Profesor\n");
         if (apa) {
             System.out.println("[3] Ambos\n");
         }
-        int compr = scI.nextInt(); // Variable para comprobar errores en el método
-
-        if (apa) {
-            if (compr != 1 && compr != 2 && compr != 3) {
-                compr = -1; // Marcar error si la opción no es válida
-            }
-        } else {
-            if (compr != 1 && compr != 2) {
-                compr = -1; // Marcar error si la opción no es válida
+        boolean cond=false;
+        while(!cond) {
+            result = verfI();
+            if(result!=-1) {
+                if (1 <= result & result <= 3) {
+                    AHist.add(result);
+                    cond = true;
+                } else {
+                    System.out.println("\nEl valor no está disposible\n");
+                }
             }
         }
-        return compr;
+        if (apa) {
+            if (result != 1 && result != 2 && result != 3) {
+                result = -1; // Marcar error si la opción no es válida
+            }
+        } else {
+            if (result != 1 && result != 2) {
+                result = -1; // Marcar error si la opción no es válida
+            }
+        }
+        return result;
     }
 
 
@@ -191,92 +233,103 @@ public class Main {
     }
 
     //Listar las tablas de la base de datos ([1] MenuP)
-    public static void ListATab(Connection conn) {
-        try {
-            // Crear un objeto Statement para ejecutar consultas SQL
-            Statement statement = conn.createStatement();
-            ResultSet resultSetTables = statement.executeQuery("SHOW TABLES");
+    public static void ListTab(Connection conn,List<Integer> AHist) {
+            try {
+                // Crear un objeto Statement para ejecutar consultas SQL
+                Statement statement = conn.createStatement();
+                ResultSet resultSetTables = statement.executeQuery("SHOW TABLES");
 
-            while (resultSetTables.next()) { // Recorre las tablas
-                String tableName = resultSetTables.getString(1); // Obtiene el nombre de la tabla
-                System.out.println("Tabla: " + tableName);
-                System.out.println("-----------------------");
+                while (resultSetTables.next()) { // Recorre las tablas
+                    String tableName = resultSetTables.getString(1); // Obtiene el nombre de la tabla
+                    System.out.println("Tabla: " + tableName);
+                    System.out.println("-----------------------");
 
-                Statement statementForTable = conn.createStatement(); // Nuevo Statement para cada tabla
-                ResultSet resultSetTableData = statementForTable.executeQuery("SELECT * FROM " + tableName);
-                ResultSetMetaData resultMD = resultSetTableData.getMetaData();
-                int columnCount = resultMD.getColumnCount();
+                    Statement statementForTable = conn.createStatement(); // Nuevo Statement para cada tabla
+                    ResultSet resultSetTableData = statementForTable.executeQuery("SELECT * FROM " + tableName);
+                    ResultSetMetaData resultMD = resultSetTableData.getMetaData();
+                    int columnCount = resultMD.getColumnCount();
 
-                while (resultSetTableData.next()) { // Recorre los resultados de la tabla actual
-                    for (int i = 1; i <= columnCount; i++) {
-                        String columnValue = resultSetTableData.getString(i);
-                        System.out.println(resultMD.getColumnName(i) + ":" + columnValue + "\t");
+                    while (resultSetTableData.next()) { // Recorre los resultados de la tabla actual
+                        for (int i = 1; i <= columnCount; i++) {
+                            String columnValue = resultSetTableData.getString(i);
+                            System.out.println(resultMD.getColumnName(i) + ":" + columnValue + "\t");
+                        }
+                        System.out.println();
                     }
-                    System.out.println();
+                    resultSetTableData.close(); // Cierra el ResultSet de la tabla actual (se cerraba automaticamente con un resultSetTab)
+                    statementForTable.close(); // Cierra el Statement de la tabla actual
                 }
-                resultSetTableData.close(); // Cierra el ResultSet de la tabla actual (se cerraba automaticamente con un resultSetTab)
-                statementForTable.close(); // Cierra el Statement de la tabla actual
+                resultSetTables.close(); // Cierra el ResultSet de las tablas
+                statement.close(); // Cierra el Statement principal
+            } catch (SQLException e) {
+                System.out.println("\nError en ListATab\n");
+                e.printStackTrace();
             }
-            resultSetTables.close(); // Cierra el ResultSet de las tablas
-            statement.close(); // Cierra el Statement principal
-        } catch (SQLException e) {
-            System.out.println("\nError en ListATab\n");
-            e.printStackTrace();
-        }
     }
 
     //Listar tabla Alumnos con sus atributos:
-    public static void ListA(Connection conn) {
-        try {
-            Statement statement = conn.createStatement();
-            ResultSet resultSetTables = statement.executeQuery("SHOW TABLES");
-            String tableName = null;
-
-            while (resultSetTables.next()) {
-                String currentTableName = resultSetTables.getString(1);
-                if (currentTableName.equals("alumno")) {
-                    tableName = currentTableName;
-                    break;
-                }
+    public static void Listar(Connection conn, int opcion) {
+            String Ntable;
+            if (opcion == 1 || opcion == 3) {
+                Ntable = "alumno";
+            } else {
+                Ntable = "profesor";
             }
+            try {
 
-            if (tableName != null) {
-                System.out.println("Tabla: " + tableName);
-                System.out.println("-----------------------");
+                Statement statement = conn.createStatement();
+                ResultSet resultSetTables = statement.executeQuery("SHOW TABLES");
+                String tableName = null;
 
-                Statement statementForTable = conn.createStatement();
-                ResultSet resultSetTableData = statementForTable.executeQuery("SELECT * FROM " + tableName);
-                ResultSetMetaData resultMD = resultSetTableData.getMetaData();
-                int columnCount = resultMD.getColumnCount();
-
-                System.out.println("Datos de la tabla:");
-
-                // Imprimir los nombres de las columnas
-                for (int i = 1; i <= columnCount; i++) {
-                    System.out.print("||");
-                    String columnName = resultMD.getColumnName(i);
-                    System.out.print(columnName);
-                    System.out.print("||");
-                    System.out.print("\t");
+                while (resultSetTables.next()) {
+                    String currentTableName = resultSetTables.getString(1);
+                    if (currentTableName.equals(Ntable)) {
+                        tableName = currentTableName;
+                        break;
+                    }
                 }
-                System.out.println();
 
-                // Imprimir los datos de la tabla
-                while (resultSetTableData.next()) {
+                if (tableName != null) {
+                    System.out.println("Tabla: " + tableName);
+                    System.out.println("-----------------------");
+
+                    Statement statementForTable = conn.createStatement();
+                    ResultSet resultSetTableData = statementForTable.executeQuery("SELECT * FROM " + tableName);
+                    ResultSetMetaData resultMD = resultSetTableData.getMetaData();
+                    int columnCount = resultMD.getColumnCount();
+
+                    System.out.println("Datos de la tabla:");
+
+                    // Imprimir los nombres de las columnas
                     for (int i = 1; i <= columnCount; i++) {
-                        Object value = resultSetTableData.getObject(i);
-                        System.out.print(value + "\t\t");
+                        System.out.print("||");
+                        String columnName = resultMD.getColumnName(i);
+                        System.out.print(columnName);
+                        System.out.print("||");
+                        System.out.print("\t");
                     }
                     System.out.println();
-                }
-            } else {
-                System.out.println("La tabla 'alumno' no fue encontrada.");
-            }
-        } catch (SQLException e) {
-            System.out.println("\nError en ListA\n");
-            e.printStackTrace();
-        }
 
+                    // Imprimir los datos de la tabla
+                    while (resultSetTableData.next()) {
+                        for (int i = 1; i <= columnCount; i++) {
+                            Object value = resultSetTableData.getObject(i);
+                            System.out.print(value + "\t\t");
+                        }
+                        System.out.println();
+                    }
+                } else {
+                    System.out.println("La tabla de" + Ntable + " no fue encontrada.");
+                }
+            } catch (SQLException e) {
+                System.out.println("\nError en Listar\n");
+                e.printStackTrace();
+            }
+            if (opcion == 3) {
+                opcion = 2;
+                System.out.println(" \n");
+                Listar(conn, opcion);//Vuelve a imprimirlo pero con profesor
+            }
     }
     //} Metodos para filtrar - listar
 
@@ -390,22 +443,22 @@ public class Main {
         System.out.println("Escriba el DNI \n");
         String dni = scS.nextLine();
         System.out.println("Escriba el ano de nacimiento\n");
-        int ano = scI.nextInt();
+        int ano = verfI();
         System.out.println("Escriba el mes de nacimiento\n");
-        int mes = scI.nextInt();
+        int mes = verfI();
         System.out.println("Escriba el dia de nacimiento\n");
-        int dia = scI.nextInt();
+        int dia = verfI();
         Date datex = new Date(ano, mes, dia);
         if (op == 1) { //Alumno
             System.out.println("Indique el curso de alumno (Solo '1' y '2')");
-            int curso_a = scI.nextInt();
+            int curso_a = verfI();
             System.out.println("Escriba el nombre del proyecto del alumno");
             String proy_a = scS.nextLine();
             Alumno alumnox = new Alumno(dni, datex, curso_a);
             insertarAlumno(conn(), alumnox);
         } else if (op == 2) { //Profesor
             System.out.println("Escriba l antiguedad del profesor \n");
-            int antig = scI.nextInt();
+            int antig = verfI();
             Profesor profesorx = new Profesor(dni,datex,antig,asignaturas());
             insertProf(conn(),profesorx);
         }
@@ -497,15 +550,68 @@ public class Main {
     //OTROS METODOS:
 
     //Metodo para seguir en la maquina de estados:
-    public static boolean salir() throws SQLException {
-        System.out.println("\n ¿Desea volver al menu principal [S/N] ? \n");
-        String condicion="";
-        while(!condicion.equalsIgnoreCase("S")&&!condicion.equalsIgnoreCase("N")) {
-            condicion=scS.nextLine();
+    public static boolean salir(List<Integer> AHist) throws SQLException {
+        System.out.println("\n ¿Seguro que desea salir [S/N] ? \n");
+        String condicion=scS.nextLine();
+        boolean opc = false;
+        //String condicion="123321";
+        //int ajuste=0;
+        while(!opc) {
+            if(condicion.equalsIgnoreCase("S")||condicion.equalsIgnoreCase("N")){
+                opc=true;
+            }else {
+                System.out.println("\nEl valor no es correcto, inserte 'S' o 'N'\n");
+                limpBuffL();
+                condicion=scS.nextLine();
+            }
+//            if(condicion.equals("123321")&&ajuste==0){ //Arreglo un poco cutre para evitar el salto del buffer
+//                ajuste++;
+//            }else{
+//                System.out.println("\nEl valor no es correcto, inserte 'S' o 'N'\n");
+//            }
         }
-        menuP();
+        if(condicion.equalsIgnoreCase("N")){
+            menuP();
+        }else{
+            System.out.print("\n\n Su proceso ha sido:  ");
+            ImprHist(AHist);//Imprime los valores [****BORRAR*****]
+            AHist.clear(); //Limpia los valores del arraylist ya que ha terminado de realizar un proceso
+            return false;
+        }
         return true;
     }
+    public static void limpBuffL(){ //No es muy eficiente porque se crea constantemente un objeto Scanner, pero es la mejor forma por ahora.
+        scI = new Scanner(System.in);
+        scS = new Scanner(System.in);
+    }
+    public static int verfI(){
+            if (scI.hasNextInt()) {
+                int opc = scI.nextInt();
+                if(opc!=-1) {
+                    return opc;
+                }else{
+                    System.out.println("Por favor, ingrese un número entero válido.");
+                    verfI(); // Como es un caso raro, no se va a abusar del recursivo
+                    return -999; //Nunca va a pasar porque antes se hace el recursivo
+                }
+            } else {
+                System.out.println("Por favor, ingrese un número entero válido.");
+                limpBuffL();
+                return -1;
+            }
+    }
+    public static void ImprHist(List<Integer> lista) {
+        for (Integer elemento : lista) {
+            if(elemento==0){
+                System.out.print(elemento);
+            }else {
+                System.out.print(elemento + " > ");
+            }
+        }
+        System.out.println("\n");
+    }
+
+
 // --------------- FIN METODOS ---------------
 
 }
