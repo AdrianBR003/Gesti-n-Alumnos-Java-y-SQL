@@ -11,10 +11,8 @@ public class Main {
     static Scanner scS = new Scanner(System.in); //Scanner para String
     static Scanner scB = new Scanner(System.in); //Scanner para Boolean
     //Variables Genericas:
-    static int result;
+    static int curso_a;
     static List<Integer> AHist = new ArrayList<>();
-
-
 
     public static void main(String[] args) throws SQLException { //Hay que añadir el SQLExepction al utilizar el metodo conn()
         // --------------- CONEXION CON LA BASE DE DATOS ---------------
@@ -64,12 +62,12 @@ public class Main {
         System.out.println("[0] Salir \n");
         boolean cond=false;
         while(!cond) {
-            result = verfI();
-            if(result!=-1){
-                if(0<=result & result<=8){
+            curso_a = verfI();
+            if(curso_a !=-1){
+                if(0<= curso_a & curso_a <=8){
                     cond=true;
-                    AHist.add(result);
-                    swP(result,AHist);
+                    AHist.add(curso_a);
+                    swP(curso_a,AHist);
                 }else{
                     System.out.println("\nEl valor no está disposible\n");
                 }
@@ -107,6 +105,7 @@ public class Main {
                 }
                 break;
             case 5://Eliminar..
+                Eliminar(menuFAPA(false,AHist));
                 break;
             case 6:
                 break;
@@ -128,11 +127,11 @@ public class Main {
         System.out.println("[5] OPCIONAL:\n");
         boolean cond=false;
         while(!cond) {
-            result = verfI();
-            if(result!=-1){
-                if(1<=result & result<=5){
+            curso_a = verfI();
+            if(curso_a !=-1){
+                if(1<= curso_a & curso_a <=5){
                     cond=true;
-                    swF(result,AHist);
+                    swF(curso_a,AHist);
                 }else{
                     System.out.println("\nEl valor no está disposible\n");
                 }
@@ -179,10 +178,17 @@ public class Main {
         }
         boolean cond=false;
         while(!cond) {
-            result = verfI();
-            if(result!=-1) {
-                if (1 <= result & result <= 3) {
-                    AHist.add(result);
+            curso_a = verfI();
+            if(curso_a !=-1 & !apa) {
+                if (1 <= curso_a & curso_a <= 2) {
+                    AHist.add(curso_a);
+                    cond = true;
+                } else {
+                    System.out.println("\nEl valor no está disposible\n");
+                }
+            }else if(curso_a !=-1 & apa){
+                if (1 <= curso_a & curso_a <= 3) {
+                    AHist.add(curso_a);
                     cond = true;
                 } else {
                     System.out.println("\nEl valor no está disposible\n");
@@ -190,15 +196,15 @@ public class Main {
             }
         }
         if (apa) {
-            if (result != 1 && result != 2 && result != 3) {
-                result = -1; // Marcar error si la opción no es válida
+            if (curso_a != 1 && curso_a != 2 && curso_a != 3) {
+                curso_a = -1; // Marcar error si la opción no es válida
             }
         } else {
-            if (result != 1 && result != 2) {
-                result = -1; // Marcar error si la opción no es válida
+            if (curso_a != 1 && curso_a != 2) {
+                curso_a = -1; // Marcar error si la opción no es válida
             }
         }
-        return result;
+        return curso_a;
     }
 
 
@@ -335,6 +341,23 @@ public class Main {
 
     //Metodos INICIALIZAR E INSERTAR
     //{
+
+    //PROFESOR || Metodos para comprobar si hay datos ya insertados en las tablas (para que no de error por doble insercion)
+    public static boolean existeP(Connection conn, String dni) {
+        String query = "SELECT COUNT(*) FROM profesor WHERE DNI = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, dni);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                int count = rs.getInt(1);
+                return count > 0; // Devuelve true si hay al menos un registro con ese DNI
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al verificar si existe el profesor.");
+            e.printStackTrace();
+        }
+        return false; // Si hay algún error o no se encuentra el registro, devuelve false
+    }
     public static void iniProf() throws SQLException { //PROFESOR
         //Creacion del profesor 1
         Profesor profesor1 = new Profesor("12345678A", new Date(80, 0, 15), 5,"Matematicas");
@@ -356,7 +379,6 @@ public class Main {
         Profesor profesor6 = new Profesor("90121111F", new Date(20, 7, 5), 4,"Literatura");
         insertProf(conn(), profesor6);
     }
-
     public static void insertProf(Connection conn, Profesor profesor) throws SQLException {
         if (!existeP(conn(), profesor.getDNI())) {
             String query = "INSERT INTO profesor (DNI, fechaNacimiento, antiguedad) VALUES (?, ?, ?)";
@@ -368,7 +390,40 @@ public class Main {
             }
         }
     }
+    public static void eliminarProfesor(Connection conn, String dni) throws SQLException {
+        if (existeP(conn, dni)) {
+            String query = "DELETE FROM profesor WHERE DNI = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                pstmt.setString(1, dni);
+                pstmt.executeUpdate();
+                System.out.println("Profesor eliminado correctamente.");
+                salir(AHist);
+            } catch (SQLException e) {
+                System.out.println("\nError al intentar eliminar al profesor: " + e.getMessage());
+                salir(AHist);
+            }
+        } else {
+            System.out.println("El profesor con DNI " + dni + " no existe en la base de datos.");
+            salir(AHist);
+        }
+    }
 
+    //ALUMNO || Metodos para comprobar si hay datos ya insertados en las tablas (para que no de error por doble insercion)
+    public static boolean existeA(Connection conn, String dni) {
+        String query = "SELECT COUNT(*) FROM alumno WHERE DNI = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, dni);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                int count = rs.getInt(1);
+                return count > 0; // Devuelve true si hay al menos un registro con ese DNI
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al verificar si existe el alumno.");
+            e.printStackTrace();
+        }
+        return false; // Si hay algún error o no se encuentra el registro, devuelve false
+    }
     public static void iniAlum() throws SQLException { //ALUMNO
         try {
             // Crear alumno 1
@@ -392,7 +447,6 @@ public class Main {
             e.printStackTrace();
         }
     }
-
     public static void insertarAlumno(Connection conn, Alumno alumno) throws SQLException {
         if (!existeA(conn(), alumno.getDNI())) {
             String query = "INSERT INTO alumno (DNI, fechaNacimiento, Curso) VALUES (?, ?, ?)";
@@ -406,7 +460,53 @@ public class Main {
             }
         }
     }
+    public static void eliminarAlumno(Connection conn, String dni) throws SQLException {
+        String opc="";
+        if(existePry(conn,dni)){
+            System.out.println("\nExiste un proyecto asignado a este alumno, ¿deseas eliminarlo igualmente? [S/N]\n");
+            opc = scS.nextLine();
+            while(!opc.equalsIgnoreCase("S")&&!opc.equalsIgnoreCase("N")) {
+                System.out.println("\n El valor insertado no es correcto \n");
+                limpBuffL();
+                opc = scS.nextLine();
+            }
+            if(opc.equalsIgnoreCase("S")){
+                eliminarProyectosDeAlumno(conn,dni);//Eliminamos primero el proyecto del alumno en caso de que exista
+            }
+        }
+        if (existeA(conn, dni)) {
+            String query = "DELETE FROM alumno WHERE DNI = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                pstmt.setString(1, dni);
+                pstmt.executeUpdate();
+                System.out.println("\nAlumno eliminado correctamente.\n");
+                menuP();
+            } catch (SQLException e) {
+                System.out.println("\nError al intentar eliminar al alumno: " + e.getMessage());
+                menuP();
+            }
+        } else {
+            System.out.println("\nEl alumno con DNI " + dni + " no existe en la base de datos.\n");
+            menuP();
+        }
+    }
 
+    //PROYECTO || Metodos para comprobar si hay datos ya insertados en las tablas (para que no de error por doble insercion)
+    public static boolean existePry(Connection conn, String dni) {
+        String query = "SELECT COUNT(*) FROM proyectos WHERE DNIAlumn = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, dni);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                int count = rs.getInt(1);
+                return count > 0; // Devuelve true si hay al menos un registro con ese DNI
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al verificar si existe el alumno.");
+            e.printStackTrace();
+        }
+        return false; // Si hay algún error o no se encuentra el registro, devuelve false
+    }
     public static void iniProyec() throws SQLException { //ALUMNO
         try {
             //Proyecto1
@@ -424,7 +524,6 @@ public class Main {
             e.printStackTrace();
         }
     }
-
     public static void insertarProyecto(Connection conn, Proyectos proyecto) throws SQLException {
         if (!existePry(conn(), proyecto.getDNI())) {
             String query = "INSERT INTO proyectos (DNIAlumn, Titulo) VALUES (?, ?)";
@@ -433,6 +532,16 @@ public class Main {
                 pstmt.setString(2, proyecto.getTitulo());
                 pstmt.executeUpdate();
             }
+        }
+    }
+    public static void eliminarProyectosDeAlumno(Connection conn, String dni) throws SQLException {
+        String query = "DELETE FROM Proyectos WHERE DNIAlumn = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, dni);
+            pstmt.executeUpdate();
+            System.out.println("\nProyectos asociados al alumno eliminados correctamente.\n");
+        } catch (SQLException e) {
+            System.out.println("\nError al intentar eliminar los proyectos del alumno: " + e.getMessage());
         }
     }
 
@@ -451,76 +560,54 @@ public class Main {
         Date datex = new Date(ano, mes, dia);
         if (op == 1) { //Alumno
             System.out.println("Indique el curso de alumno (Solo '1' y '2')");
-            int curso_a = verfI();
+            boolean cond=false;
+            while(!cond) {
+                curso_a = verfI();
+                if(curso_a !=-1){
+                    if(0<= curso_a & curso_a <=2){
+                        cond=true;
+                    }else{
+                        System.out.println("\nEl valor no está disposible\n");
+                    }
+                }
+            }
             System.out.println("Escriba el nombre del proyecto del alumno");
             String proy_a = scS.nextLine();
             Alumno alumnox = new Alumno(dni, datex, curso_a);
             insertarAlumno(conn(), alumnox);
         } else if (op == 2) { //Profesor
-            System.out.println("Escriba l antiguedad del profesor \n");
+            System.out.println("Escriba la antiguedad del profesor \n");
             int antig = verfI();
             Profesor profesorx = new Profesor(dni,datex,antig,asignaturas());
             insertProf(conn(),profesorx);
         }
     }
 
+    public static void Eliminar(int op) throws SQLException{
+        String opcion;
 
+        if(op==1){ //Alumno
+            opcion="alumno";
+        }else if(op==2){
+            opcion="profesor";
+        }else {
+            System.out.println("\nER-Valor incorrecto-Eliminar\n");
+            opcion = "ER";
+        }
+        if(!opcion.equals("ER")) {
+            System.out.println("Escriba el DNI del " + opcion+ " que desea eliminar \n");
+            String dni = scS.nextLine();
+            if(existeA(conn(),dni)){ //ALUMNO
+                eliminarAlumno(conn(),dni);
+            }else{
+                if(existeP(conn(),dni)){ //PROFESOR
+                    eliminarProfesor(conn(),dni);
+                }
+            }
+        }
+    }
     //}
     //} INICIALIZAR E INSERTAR
-
-
-    //METODOS COMPROBAR INSERCION
-    //{
-    //ALUMNO || Metodos para comprobar si hay datos ya insertados en las tablas (para que no de error por doble insercion)
-    public static boolean existeA(Connection conn, String dni) {
-        String query = "SELECT COUNT(*) FROM alumno WHERE DNI = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-            pstmt.setString(1, dni);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                int count = rs.getInt(1);
-                return count > 0; // Devuelve true si hay al menos un registro con ese DNI
-            }
-        } catch (SQLException e) {
-            System.out.println("Error al verificar si existe el alumno.");
-            e.printStackTrace();
-        }
-        return false; // Si hay algún error o no se encuentra el registro, devuelve false
-    }
-
-    //PROFESOR || Metodos para comprobar si hay datos ya insertados en las tablas (para que no de error por doble insercion)
-    public static boolean existeP(Connection conn, String dni) {
-        String query = "SELECT COUNT(*) FROM profesor WHERE DNI = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-            pstmt.setString(1, dni);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                int count = rs.getInt(1);
-                return count > 0; // Devuelve true si hay al menos un registro con ese DNI
-            }
-        } catch (SQLException e) {
-            System.out.println("Error al verificar si existe el alumno.");
-            e.printStackTrace();
-        }
-        return false; // Si hay algún error o no se encuentra el registro, devuelve false
-    }
-
-    public static boolean existePry(Connection conn, String dni) {
-        String query = "SELECT COUNT(*) FROM proyectos WHERE DNIAlumn = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-            pstmt.setString(1, dni);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                int count = rs.getInt(1);
-                return count > 0; // Devuelve true si hay al menos un registro con ese DNI
-            }
-        } catch (SQLException e) {
-            System.out.println("Error al verificar si existe el alumno.");
-            e.printStackTrace();
-        }
-        return false; // Si hay algún error o no se encuentra el registro, devuelve false
-    }
-    //}METODO INSERCION
 
     //METODOS UNICOS DE CLASES:
     //{
@@ -542,11 +629,6 @@ public class Main {
 
     //}
 
-    //METODOS EXCEPCIONES:
-    //{
-
-    //}
-
     //OTROS METODOS:
 
     //Metodo para seguir en la maquina de estados:
@@ -564,11 +646,6 @@ public class Main {
                 limpBuffL();
                 condicion=scS.nextLine();
             }
-//            if(condicion.equals("123321")&&ajuste==0){ //Arreglo un poco cutre para evitar el salto del buffer
-//                ajuste++;
-//            }else{
-//                System.out.println("\nEl valor no es correcto, inserte 'S' o 'N'\n");
-//            }
         }
         if(condicion.equalsIgnoreCase("N")){
             menuP();
@@ -610,8 +687,6 @@ public class Main {
         }
         System.out.println("\n");
     }
-
-
 // --------------- FIN METODOS ---------------
 
 }
