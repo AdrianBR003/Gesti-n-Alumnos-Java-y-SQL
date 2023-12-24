@@ -1,4 +1,5 @@
 package def;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -7,7 +8,7 @@ public class Proyectos extends Alumno {
     private String Titulo;
 
     //#---CONSTRUCTOR definido---#
-    public Proyectos(String DNI, Date fechaNacimiento, int Curso, String Titulo) {
+    public Proyectos(String DNI, LocalDate fechaNacimiento, int Curso, String Titulo) {
         super(DNI,fechaNacimiento, Curso);
         this.Titulo = Titulo;
     }

@@ -1,16 +1,17 @@
 package def;
+import java.time.LocalDate;
 import java.util.*;
 
 public class Alumno {
     //#---VARIABLES---#
     private String DNI;
     private Map<Integer, List<String>> asignaturasPorCurso = new HashMap<>();
-    private Date fechaNacimiento;
+    private LocalDate fechaNacimiento;
     private int curso;
     //El alumno no tiene declarado el proyecto, ya que puede tenerlo o no tenerlo. Directamente se declara con la clase proyecto que hereda de la Alumno
 
     //#---CONSTRUCTOR definido---#
-    public Alumno(String DNI, Date fechaNacimiento, int curso) {
+    public Alumno(String DNI, LocalDate fechaNacimiento, int curso) {
         this.DNI = DNI;
         this.fechaNacimiento = fechaNacimiento;
         this.curso = curso;
@@ -38,10 +39,10 @@ public class Alumno {
         this.asignaturasPorCurso = asignaturasPorCurso;
     }
     //Fecha de Nacimiento
-    public Date getFechaNacimiento() {
+    public LocalDate getFechaNacimiento() {
         return fechaNacimiento;
     }
-    public void setFechaNacimiento(Date fechaNacimiento) {
+    public void setFechaNacimiento(LocalDate fechaNacimiento) {
         this.fechaNacimiento = fechaNacimiento;
     }
     //Curso

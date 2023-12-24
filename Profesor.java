@@ -1,4 +1,5 @@
 package def;
+import java.time.LocalDate;
 import java.util.*;
 
 public class Profesor {
@@ -6,11 +7,11 @@ public class Profesor {
     //#---VARIABLES---#
     private String DNI;
     private String asignatura;  //1 asign por profesor -> Relacion 1:N (darClase)
-    private Date fechaNacimiento;
+    private LocalDate fechaNacimiento;
     private int antiguedad;
 
     //#---CONSTRUCTOR definido---#
-    public Profesor(String DNI, Date fechaNacimiento, int antiguedad, String asignatura) {
+    public Profesor(String DNI, LocalDate fechaNacimiento, int antiguedad, String asignatura) {
         this.DNI = DNI;
         this.fechaNacimiento = fechaNacimiento;
         this.antiguedad = antiguedad;
@@ -32,10 +33,10 @@ public class Profesor {
             this.asignatura = asignatura;
     }
     //FechaNacimiento
-    public Date getFechaNacimiento() {
+    public LocalDate getFechaNacimiento() {
         return fechaNacimiento;
     }
-    public void setFechaNacimiento(Date fechaNacimiento) {
+    public void setFechaNacimiento(LocalDate fechaNacimiento) {
         this.fechaNacimiento = fechaNacimiento;
     }
     //Antiguedad

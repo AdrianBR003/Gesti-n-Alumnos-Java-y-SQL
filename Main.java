@@ -1,6 +1,7 @@
 package def;
 import java.sql.*;
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.*;
 
 public class Main {
@@ -9,10 +10,9 @@ public class Main {
     //Funciones Scanner:
     static Scanner scI = new Scanner(System.in); //Scanner para Enteros (Integer)
     static Scanner scS = new Scanner(System.in); //Scanner para String
-    static Scanner scB = new Scanner(System.in); //Scanner para Boolean
     //Variables Genericas:
-    static int curso_a;
     static List<Integer> AHist = new ArrayList<>();
+
 
     public static void main(String[] args) throws SQLException { //Hay que añadir el SQLExepction al utilizar el metodo conn()
         // --------------- CONEXION CON LA BASE DE DATOS ---------------
@@ -49,7 +49,7 @@ public class Main {
     //}
     //MENUS Y SWITCHS:{
     public static void menuP() throws SQLException { //Menu principal
-        System.out.println("*** Bienvenido ProfesorX al menu de la base de datos del alumnado: ***\n\n");
+        System.out.println("\n*** Bienvenido ProfesorX al menu de la base de datos del alumnado: ***\n\n");
         System.out.println("Seleccione la opción que desea ejecutar:\n");
         System.out.println("[1] Listar las tablas de la base de datos \n");
         System.out.println("[2] Filtrar por.. \n");
@@ -60,25 +60,15 @@ public class Main {
         System.out.println("[7] Eliminar proyecto a un alumno \n");
         System.out.println("[8] Listar a todos los alumnos con sus respectivos proyectos \n");
         System.out.println("[0] Salir \n");
-        boolean cond=false;
-        while(!cond) {
-            curso_a = verfI();
-            if(curso_a !=-1){
-                if(0<= curso_a & curso_a <=8){
-                    cond=true;
-                    AHist.add(curso_a);
-                    swP(curso_a,AHist);
-                }else{
-                    System.out.println("\nEl valor no está disposible\n");
-                }
-            }
-        }
+        int opc = rangI(verfI(),9,0);
+        AHist.add(opc);
+        swP(opc,AHist);
     }
 
     public static void swP(int opcionP, List<Integer> AHist) throws SQLException {
         switch (opcionP) {
             case 1://Listar las tablas de la base de datos
-                ListTab(conn(),AHist);
+                ListTab(conn());
                 menuP();
                 break;
             case 2://Filtrar
@@ -125,18 +115,8 @@ public class Main {
         System.out.println("[3] Fecha de Nacimiento: ...\n");
         System.out.println("[4] Antiguedad: Filtra a los profesores por la antiguedad que inserte\n");
         System.out.println("[5] OPCIONAL:\n");
-        boolean cond=false;
-        while(!cond) {
-            curso_a = verfI();
-            if(curso_a !=-1){
-                if(1<= curso_a & curso_a <=5){
-                    cond=true;
-                    swF(curso_a,AHist);
-                }else{
-                    System.out.println("\nEl valor no está disposible\n");
-                }
-            }
-        }
+        int opc= rangI(verfI(),6,1);
+        swF(opc,AHist);
     }
 
     /*Nota sobre filtrar:
@@ -176,70 +156,20 @@ public class Main {
         if (apa) {
             System.out.println("[3] Ambos\n");
         }
-        boolean cond=false;
-        while(!cond) {
-            curso_a = verfI();
-            if(curso_a !=-1 & !apa) {
-                if (1 <= curso_a & curso_a <= 2) {
-                    AHist.add(curso_a);
-                    cond = true;
-                } else {
-                    System.out.println("\nEl valor no está disposible\n");
-                }
-            }else if(curso_a !=-1 & apa){
-                if (1 <= curso_a & curso_a <= 3) {
-                    AHist.add(curso_a);
-                    cond = true;
-                } else {
-                    System.out.println("\nEl valor no está disposible\n");
-                }
-            }
+        if(apa) {
+            return rangI(verfI(),4,1);
+        }else{
+            return rangI(verfI(),1,0);
         }
-        if (apa) {
-            if (curso_a != 1 && curso_a != 2 && curso_a != 3) {
-                curso_a = -1; // Marcar error si la opción no es válida
-            }
-        } else {
-            if (curso_a != 1 && curso_a != 2) {
-                curso_a = -1; // Marcar error si la opción no es válida
-            }
-        }
-        return curso_a;
     }
 
 
     //}
     //METODOS PARA FILTRAR - LISTAR
     //{
-    //Filtrar Dispositivos (predeterminado)
-    public static void selectDispositivos(Connection conn) { // #Listar la tabla alumnos
-        try {
-            // Crear un objeto Statement para ejecutar consultas SQL
-            Statement statement = conn.createStatement();
-            // Ejemplo: insertar un nuevo registro en una tabla
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM Dispositivos"); //Para los select, el resto de operaciones tienen otro formato buscar información de como funciona JDBC
-            while (resultSet.next()) {
-                // Aquí puedes acceder a los datos de cada fila
-                int id = resultSet.getInt("idDispositivo"); //Se indica la variable donde se almacena y la columna de la que se extrae el dato
-                String nombre = resultSet.getString("nombre");
-                String tipo = resultSet.getString("tipo");
-                String ip = resultSet.getString("ip");
-
-                // Imprimir los datos (esto es solo un ejemplo, puedes hacer lo que necesites con los datos)
-                System.out.println("ID: " + id + ", Columna1: " + nombre + ", Columna2: " + tipo + ", IP: " + ip);
-            }
-            // Cerrar la conexión y el statement
-            statement.close();
-            conn.close();
-            ;
-        } catch (SQLException e) {
-            System.out.println("Error al conectar con la base de datos");
-            e.printStackTrace();
-        }
-    }
 
     //Listar las tablas de la base de datos ([1] MenuP)
-    public static void ListTab(Connection conn,List<Integer> AHist) {
+    public static void ListTab(Connection conn) {
             try {
                 // Crear un objeto Statement para ejecutar consultas SQL
                 Statement statement = conn.createStatement();
@@ -360,23 +290,21 @@ public class Main {
     }
     public static void iniProf() throws SQLException { //PROFESOR
         //Creacion del profesor 1
-        Profesor profesor1 = new Profesor("12345678A", new Date(80, 0, 15), 5,"Matematicas");
-        Set<String> asignaturasProfesor1 = new HashSet<>(); //Creamos el Hashset para el profesor1 usando Set para declarar que no se repita ningun String
-        asignaturasProfesor1.add("Física");
+        Profesor profesor1 = new Profesor("12345678A", LocalDate.of(1980,5,13), 5,"Matematicas");
         insertProf(conn(), profesor1); //Esto obliga a poner el SQLException
         // Creación de profesor 2
-        Profesor profesor2 = new Profesor("98765432B", new Date(75, 2, 28), 8,"Fisica");
+        Profesor profesor2 = new Profesor("98765432B", LocalDate.of(1990,1,15), 8,"Fisica");
         insertProf(conn(), profesor2);
         // Creación de profesor 3
-        Profesor profesor3 = new Profesor("56789012C", new Date(85, 5, 10), 3,"Historia");
+        Profesor profesor3 = new Profesor("56789012C", LocalDate.of(1992,7,3), 3,"Historia");
         insertProf(conn(), profesor3);
         // Creación de profesor 4
-        Profesor profesor4 = new Profesor("34567890D", new Date(90, 10, 20), 7,"Quimica");
+        Profesor profesor4 = new Profesor("34567890D", LocalDate.of(1985,12,11), 7,"Quimica");
         insertProf(conn(), profesor4);
         // Creación de profesor 5
-        Profesor profesor5 = new Profesor("90123456E", new Date(79, 7, 5), 4,"Biologia");
+        Profesor profesor5 = new Profesor("90123456E", LocalDate.of(1985,2,25), 4,"Biologia");
         insertProf(conn(), profesor5);
-        Profesor profesor6 = new Profesor("90121111F", new Date(20, 7, 5), 4,"Literatura");
+        Profesor profesor6 = new Profesor("90121111F", LocalDate.of(1993,10,25), 4,"Literatura");
         insertProf(conn(), profesor6);
     }
     public static void insertProf(Connection conn, Profesor profesor) throws SQLException {
@@ -384,7 +312,7 @@ public class Main {
             String query = "INSERT INTO profesor (DNI, fechaNacimiento, antiguedad) VALUES (?, ?, ?)";
             try (PreparedStatement pstmt = conn.prepareStatement(query)) {
                 pstmt.setString(1, profesor.getDNI());
-                pstmt.setDate(2, new Date(profesor.getFechaNacimiento().getTime()));
+                pstmt.setDate(2, Date.valueOf(profesor.getFechaNacimiento()));
                 pstmt.setInt(3, profesor.getAntiguedad());
                 pstmt.executeUpdate();
             }
@@ -427,19 +355,19 @@ public class Main {
     public static void iniAlum() throws SQLException { //ALUMNO
         try {
             // Crear alumno 1
-            Alumno alumno1 = new Alumno("12345678A", new Date(90, 0, 15), 2);
+            Alumno alumno1 = new Alumno("12345678A", LocalDate.of(2003, 10, 15), 2);
             alumno1.getAsignaturasPorCurso();
             insertarAlumno(conn(), alumno1);
-            Alumno alumno2 = new Alumno("23456789B", new Date(88, 5, 20), 1);
+            Alumno alumno2 = new Alumno("23456789B", LocalDate.of(2001, 5, 20), 1);
             alumno2.getAsignaturasPorCurso();
             insertarAlumno(conn(), alumno2);
-            Alumno alumno3 = new Alumno("34567890C", new Date(89, 9, 10), 2);
+            Alumno alumno3 = new Alumno("34567890C", LocalDate.of(2002, 9, 10), 2);
             alumno3.getAsignaturasPorCurso();
             insertarAlumno(conn(), alumno3);
-            Alumno alumno4 = new Alumno("45678901D", new Date(91, 3, 25), 1);
+            Alumno alumno4 = new Alumno("45678901D", LocalDate.of(2002, 3, 25), 1);
             alumno4.getAsignaturasPorCurso();
             insertarAlumno(conn(), alumno4);
-            Alumno alumno5 = new Alumno("56789012E", new Date(87, 11, 5), 2);
+            Alumno alumno5 = new Alumno("56789012E", LocalDate.of(2000, 11, 5), 2);
             alumno5.getAsignaturasPorCurso();
             insertarAlumno(conn(), alumno5);
         } catch (SQLException e) {
@@ -452,7 +380,7 @@ public class Main {
             String query = "INSERT INTO alumno (DNI, fechaNacimiento, Curso) VALUES (?, ?, ?)";
             try (PreparedStatement pstmt = conn.prepareStatement(query)) {
                 pstmt.setString(1, alumno.getDNI());
-                pstmt.setDate(2, new Date(alumno.getFechaNacimiento().getTime()));
+                pstmt.setDate(2,Date.valueOf(alumno.getFechaNacimiento()));
                 pstmt.setInt(3, alumno.getCurso());
                 pstmt.executeUpdate();
             }catch (Exception e){
@@ -510,13 +438,13 @@ public class Main {
     public static void iniProyec() throws SQLException { //ALUMNO
         try {
             //Proyecto1
-            Proyectos proyecto1 = new Proyectos("12345678A", new Date(90, 0, 15), 2, "Título del Proyecto 1");
+            Proyectos proyecto1 = new Proyectos("12345678A", LocalDate.of(2020, 10, 15), 2, "Título del Proyecto 1");
             insertarProyecto(conn(), proyecto1);
             //Proyecto2
-            Proyectos proyecto2 = new Proyectos("23456789B", new Date(88, 5, 20), 1, "Título del Proyecto 2");
+            Proyectos proyecto2 = new Proyectos("23456789B", LocalDate.of(2021, 5, 20), 1, "Título del Proyecto 2");
             insertarProyecto(conn(), proyecto2);
             //Proyecto3
-            Proyectos proyecto3 = new Proyectos("34567890C", new Date(89, 9, 10), 3, "Título del Proyecto 3");
+            Proyectos proyecto3 = new Proyectos("34567890C", LocalDate.of(2019, 9, 10), 3, "Título del Proyecto 3");
             insertarProyecto(conn(), proyecto3);
 
         } catch (SQLException e) {
@@ -549,35 +477,26 @@ public class Main {
     //{
     public static void Anadir(int op) throws SQLException { //Alumnos==1 || Profesor==2 || Proyecto==3
         //
+        boolean condicion=false;
         System.out.println("Escriba el DNI \n");
         String dni = scS.nextLine();
         System.out.println("Escriba el ano de nacimiento\n");
-        int ano = verfI();
+        int ano = rangI(verfI(),2011,1949);
         System.out.println("Escriba el mes de nacimiento\n");
-        int mes = verfI();
+        int mes = rangI(verfI(),13,0);
         System.out.println("Escriba el dia de nacimiento\n");
-        int dia = verfI();
-        Date datex = new Date(ano, mes, dia);
+        int dia = rangI(verfI(),32,0);
+        LocalDate datex = LocalDate.of(ano, mes, dia);
         if (op == 1) { //Alumno
             System.out.println("Indique el curso de alumno (Solo '1' y '2')");
-            boolean cond=false;
-            while(!cond) {
-                curso_a = verfI();
-                if(curso_a !=-1){
-                    if(0<= curso_a & curso_a <=2){
-                        cond=true;
-                    }else{
-                        System.out.println("\nEl valor no está disposible\n");
-                    }
-                }
-            }
+            int curso_a = rangI(verfI(),3,0);
             System.out.println("Escriba el nombre del proyecto del alumno");
             String proy_a = scS.nextLine();
             Alumno alumnox = new Alumno(dni, datex, curso_a);
             insertarAlumno(conn(), alumnox);
         } else if (op == 2) { //Profesor
             System.out.println("Escriba la antiguedad del profesor \n");
-            int antig = verfI();
+            int antig = rangI(verfI(),41,0);
             Profesor profesorx = new Profesor(dni,datex,antig,asignaturas());
             insertProf(conn(),profesorx);
         }
@@ -593,6 +512,7 @@ public class Main {
         }else {
             System.out.println("\nER-Valor incorrecto-Eliminar\n");
             opcion = "ER";
+            menuP();
         }
         if(!opcion.equals("ER")) {
             System.out.println("Escriba el DNI del " + opcion+ " que desea eliminar \n");
@@ -662,21 +582,31 @@ public class Main {
         scS = new Scanner(System.in);
     }
     public static int verfI(){
-            if (scI.hasNextInt()) {
-                int opc = scI.nextInt();
-                if(opc!=-1) {
-                    return opc;
-                }else{
-                    System.out.println("Por favor, ingrese un número entero válido.");
-                    verfI(); // Como es un caso raro, no se va a abusar del recursivo
-                    return -999; //Nunca va a pasar porque antes se hace el recursivo
-                }
-            } else {
+        if (scI.hasNextInt()) {
+            int opc = scI.nextInt();
+            limpBuffL();
+            if(opc!=-1) {
+                return opc;
+            }else{
                 System.out.println("Por favor, ingrese un número entero válido.");
-                limpBuffL();
-                return -1;
+                verfI(); // Como es un caso raro, no se va a abusar del recursivo
+                return -999; //Nunca va a pasar porque antes se hace el recursivo
             }
+        } else {
+            System.out.println("Por favor, ingrese un número entero válido.");
+            limpBuffL();
+            return -1;
+        }
     }
+    public static int rangI(int variable, int max, int min) {
+        while(variable>max || variable<min){
+            System.out.println("\n El valor no está dentro del rango disponible\n");
+            variable=scI.nextInt();
+            limpBuffL();
+        }
+        return variable;
+    }
+
     public static void ImprHist(List<Integer> lista) {
         for (Integer elemento : lista) {
             if(elemento==0){
