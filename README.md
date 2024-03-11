@@ -1,5 +1,5 @@
 Características: 
-1.- Uso de la librería .sql
+1.- Uso del paquete java.sql
 2.- Se utilizan 'HashSet' y Herencia
 
 
